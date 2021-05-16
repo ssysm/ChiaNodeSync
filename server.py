@@ -2,14 +2,18 @@ import json
 
 import logging
 import redis
-from flask import Flask, request, jsonify, Response
+from flask import Flask, request, jsonify, Response, send_file
 
 from cache_key import CACHE_KEY
 
 app = Flask(__name__)
 cache = redis.Redis(host='127.0.0.1', port=6379, db=0, decode_responses=True)
 logging.basicConfig(level=logging.INFO)
-TTL_TIME = 10 * 60  # 10 Min
+TTL_TIME = 5 * 60  # 5 Min
+
+@app.route('/', methods=['GET'])
+def get_index():
+    return send_file('table.html')
 
 @app.route('/nodes', methods=['GET'])
 def get_nodes():
@@ -20,15 +24,18 @@ def get_nodes():
         is_include_block_height = True
 
     nodes = cache.smembers(CACHE_KEY['NODES_SET'])
+    validated_at = cache.get(CACHE_KEY['LAST_VALIDATE'])
     nodes = list(nodes)
 
     if is_include_block_height == 'false':
         cached_result = cache.get(CACHE_KEY['NO_BLOCK_HEIGHT_CACHE'])
         if cached_result is None:
-            cache.set(CACHE_KEY['NO_BLOCK_HEIGHT_CACHE'], json.dumps({'nodes': nodes}))
+            cache.set(CACHE_KEY['NO_BLOCK_HEIGHT_CACHE'], json.dumps({'nodes': nodes,
+                                                                      'validated_at': validated_at}))
             cache.expire(CACHE_KEY['NO_BLOCK_HEIGHT_CACHE'], TTL_TIME)
             return jsonify({
-                'nodes': nodes
+                'nodes': nodes,
+                'validated_at': validated_at
             }), 200
         return Response(cached_result, mimetype='application/json')
     else:
@@ -42,10 +49,12 @@ def get_nodes():
                     'port': node.split(':')[1],
                     'block_height': str(block_height)
                 })
-            cache.set(CACHE_KEY['BLOCK_HEIGHT_CACHE'], json.dumps({'nodes': updated_node_list}))
+            cache.set(CACHE_KEY['BLOCK_HEIGHT_CACHE'], json.dumps({'nodes': updated_node_list,
+                                                                   'validated_at': validated_at}))
             cache.expire(CACHE_KEY['BLOCK_HEIGHT_CACHE'], TTL_TIME)
             return jsonify({
-                'nodes': updated_node_list
+                'nodes': updated_node_list,
+                'validated_at': validated_at
             }), 200
         return Response(cached_result, mimetype='application/json')
 

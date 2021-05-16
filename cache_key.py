@@ -3,5 +3,6 @@ CACHE_KEY={
     'BLOCK_HEIGHT_CACHE': 'chia:block-height',
     'NODES_SET': 'chia:nodes',
     'IP_CACHE': 'chia:nodes:',
-    'DOWN_NODE_SET': 'chia:down-nodes'
+    'DOWN_NODE_SET': 'chia:down-nodes',
+    'LAST_VALIDATE': 'chia:last_validate'
 }

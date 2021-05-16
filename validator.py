@@ -1,17 +1,19 @@
+import argparse
 import time
 
 import logging
+import datetime
+
 import redis
 
 import node_validation
 from Node import Node
 from cache_key import CACHE_KEY
 
-INTERVAL = 15 * 60  # 15 min
 SKIP_FOR_DOWN_NODE = 5  # Skip interval 5 times, and rescan down node
 
 cache = redis.Redis(host='127.0.0.1', port=6379, db=0, decode_responses=True)
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 
 def validate_nodes(validate_down_node=False):
@@ -39,10 +41,17 @@ def validate_nodes(validate_down_node=False):
     for node in up_nodes:
         cache.sadd(CACHE_KEY['NODES_SET'], node.ip + ':' + str(node.port))
         cache.srem(CACHE_KEY['DOWN_NODE_SET'], node.ip+':'+str(node.port))
+    st = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
+    cache.set(CACHE_KEY['LAST_VALIDATE'], st)
     pass
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Chia node connection validator')
+    parser.add_argument('--interval', metavar='interval', type=str,
+                        help='Validation Interval. Default to 15min', default=15)
+    args = parser.parse_args()
+    INTERVAL = args.intreval * 60
     loop = 0
     while True:
         loop = loop + 1
