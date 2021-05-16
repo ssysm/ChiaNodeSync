@@ -9,9 +9,9 @@ from datetime import timedelta
 
 from Node import Node
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
-LOG_REGEX = r'FULL_NODE\s((?:[0-9]{1,3}\.){3}[0-9]{1,3})\s*.*\/(\d+).*?Height:\s*(\d+)'
+LOG_REGEX = r'FULL_NODE\s((?:[0-9]{1,3}\.){3}[0-9]{1,3})\s*\d+\/(\d+).*?Height:\s*(\d+)'
 BIN_ARGS = 'show --connections'
 
 
