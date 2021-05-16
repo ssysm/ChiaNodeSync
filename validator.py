@@ -51,7 +51,7 @@ if __name__ == '__main__':
     parser.add_argument('--interval', metavar='interval', type=str,
                         help='Validation Interval. Default to 15min', default=15)
     args = parser.parse_args()
-    INTERVAL = args.intreval * 60
+    INTERVAL = args.interval * 60
     loop = 0
     while True:
         loop = loop + 1
