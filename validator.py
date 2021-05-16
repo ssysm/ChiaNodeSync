@@ -48,7 +48,7 @@ def validate_nodes(validate_down_node=False):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Chia node connection validator')
-    parser.add_argument('--interval', metavar='interval', type=str,
+    parser.add_argument('--interval', metavar='interval', type=int,
                         help='Validation Interval. Default to 15min', default=15)
     args = parser.parse_args()
     INTERVAL = args.interval * 60

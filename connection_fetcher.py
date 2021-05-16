@@ -9,9 +9,9 @@ from datetime import timedelta
 
 from Node import Node
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
-LOG_REGEX = r'FULL_NODE\s((?:[0-9]{1,3}\.){3}[0-9]{1,3})\s*(\d+).*?Height:\s*(\d+)'
+LOG_REGEX = r'FULL_NODE\s((?:[0-9]{1,3}\.){3}[0-9]{1,3})\s*.*\/(\d+).*?Height:\s*(\d+)'
 BIN_ARGS = 'show --connections'
 
 
@@ -19,6 +19,7 @@ def fetch_connections(bin_folder, bin_exc_name):
     connections_table = subprocess.check_output(bin_folder + bin_exc_name + ' ' + BIN_ARGS, shell=True)
     output = str(connections_table)
 
+    logging.debug('connections: ' + output)
     grouped_output = re.findall(LOG_REGEX, output)
 
     nodes = []
