@@ -19,9 +19,11 @@ logging.basicConfig(level=logging.INFO)
 isWindows = os.name == 'nt'
 TTL_TIME = 5 * 60  # 5 Min
 
+
 @app.route('/', methods=['GET'])
 def get_index():
     return send_file('table.html')
+
 
 @app.route('/nodes', methods=['GET'])
 def get_nodes():
@@ -86,7 +88,7 @@ def get_nodes():
             cache.expire(CACHE_KEY['BLOCK_HEIGHT_CACHE'], TTL_TIME)
             if is_include_geo:
                 cache.set(CACHE_KEY['BLOCK_HEIGHT_AND_GEO_CACHE'], json.dumps({'nodes': updated_node_list,
-                                                                       'validated_at': validated_at}))
+                                                                               'validated_at': validated_at}))
                 cache.expire(CACHE_KEY['BLOCK_HEIGHT_AND_GEO_CACHE'], TTL_TIME)
             else:
                 cache.set(CACHE_KEY['BLOCK_HEIGHT_CACHE'], json.dumps({'nodes': updated_node_list,
@@ -98,11 +100,12 @@ def get_nodes():
             }), 200
         return Response(cached_result, mimetype='application/json')
 
+
 @app.route('/heatmap', methods=['GET'])
 def get_node_heatmap():
     cached_result = cache.get(CACHE_KEY['BLOCK_HEIGHT_AND_GEO_CACHE'])
     heatmap_file = pathlib.Path('heatmap.png')
-    if cached_result is None and not heatmap_file.exists():
+    if cached_result is None or not heatmap_file.exists():
         nodes = cache.smembers(CACHE_KEY['NODES_SET'])
         with open('geo_cache.csv', 'w', newline='') as csvfile:
             csv_writer = csv.writer(csvfile, delimiter=',',
@@ -113,12 +116,15 @@ def get_node_heatmap():
                 if geo_result is None:
                     continue
                 country_lat_long = geo_lookup.convert_cc_to_latlong(geo_result.country.iso_code)
-                csv_writer.writerow([country_lat_long['lat'],country_lat_long['long']])
+                csv_writer.writerow([country_lat_long['lat'], country_lat_long['long']])
             csvfile.close()
             if isWindows:
-                sts = subprocess.Popen('venv/Scripts/python.exe heatmap/heatmap.py --filetype csv -o heatmap.png --osm --zoom 3  geo_cache.csv').wait()
+                sts = subprocess.Popen(
+                    'venv/Scripts/python.exe heatmap/heatmap.py --filetype csv -o heatmap.png --osm --zoom 3  '
+                    'geo_cache.csv').wait()
             else:
-                sts = subprocess.Popen('venv/bin/python heatmap/heatmap.py --filetype csv -o heatmap.png --osm --zoom 3  geo_cache.csv').wait()
+                sts = subprocess.Popen('venv/bin/python heatmap/heatmap.py --filetype csv -o heatmap.png --osm --zoom '
+                                       '3  geo_cache.csv', shell=True).wait()
             if sts != 0:
                 return '', 204
     return send_file('heatmap.png')

@@ -86,6 +86,7 @@
             <div class="heatmap">
                 <button type="button" id="collapsible-map-button">Toggle Node Heatmap</button>
                 <div id="heatmap-container" style="padding-top: 10px">
+                    <span id="loading-status"></span>
                     <img src="" alt="Node Heatmap" id="heatmap-image">
                 </div>
             </div>
@@ -121,10 +122,12 @@
         const validatedAtElm = document.querySelector('#validated-at');
         const mapButtonElm = document.querySelector('#collapsible-map-button');
         const heatmapContainerElm = document.querySelector('#heatmap-container');
-
+        const heatmapImage = document.querySelector('#heatmap-image');
+        const imageLoadingElm = document.querySelector('#loading-status');
         window.onload = async()=>{
 
             mapButtonElm.addEventListener('click', toggleHeatmap);
+            heatmapImage.addEventListener('load', onloadImage);
 
             try{
                 let tableHtml = '';
@@ -158,8 +161,8 @@
 
         const toggleHeatmap = (evt) =>{
             if(isHeatmapClosed){
-                const heatmapImage = document.querySelector('#heatmap-image');
                 heatmapImage.src = '/heatmap?time=' + Date.now();
+                imageLoadingElm.innerHTML = 'Loading heatmap...';
                 heatmapContainerElm.style.display = 'block';
                 isHeatmapClosed = false;
             }else{
@@ -167,6 +170,10 @@
                 isHeatmapClosed = true;
             }
 
+        };
+
+        const onloadImage = (evt) =>{
+            imageLoadingElm.innerHTML = '';
         }
     </script>
 
