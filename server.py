@@ -2,6 +2,7 @@ import csv
 import json
 
 import logging
+import os
 import pathlib
 import subprocess
 
@@ -15,6 +16,7 @@ from cache_key import CACHE_KEY
 app = Flask(__name__)
 cache = redis.Redis(host='127.0.0.1', port=6379, db=0, decode_responses=True)
 logging.basicConfig(level=logging.INFO)
+isWindows = os.name == 'nt'
 TTL_TIME = 5 * 60  # 5 Min
 
 @app.route('/', methods=['GET'])
@@ -113,7 +115,10 @@ def get_node_heatmap():
                 country_lat_long = geo_lookup.convert_cc_to_latlong(geo_result.country.iso_code)
                 csv_writer.writerow([country_lat_long['lat'],country_lat_long['long']])
             csvfile.close()
-            sts = subprocess.Popen('venv/Scripts/python.exe heatmap/heatmap.py --filetype csv -o heatmap.png --osm --zoom 3  geo_cache.csv').wait()
+            if isWindows:
+                sts = subprocess.Popen('venv/Scripts/python.exe heatmap/heatmap.py --filetype csv -o heatmap.png --osm --zoom 3  geo_cache.csv').wait()
+            else:
+                sts = subprocess.Popen('venv/bin/python heatmap/heatmap.py --filetype csv -o heatmap.png --osm --zoom 3  geo_cache.csv').wait()
             if sts != 0:
                 return '', 204
     return send_file('heatmap.png')
