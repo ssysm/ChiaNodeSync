@@ -59,7 +59,7 @@ if __name__ == '__main__':
     parser.add_argument('--server', metavar='server', type=str,
                         help='Upstream Server', required=True)
     parser.add_argument('--interval', metavar='interval', type=int,
-                        help='Connection refresh interval in minutes', default=1)
+                        help='Connection refresh interval in minutes', default=5)
     args = parser.parse_args()
     isWindows = os.name == 'nt'
     bin_name = '\\chia.exe' if isWindows else './chia'

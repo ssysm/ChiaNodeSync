@@ -8,12 +8,21 @@ import subprocess
 
 import redis
 from flask import Flask, request, jsonify, Response, send_file
+from flask_limiter import Limiter
+from flask_limiter.util import get_ipaddr
 
 import geo_lookup
 from Node import Node
 from cache_key import CACHE_KEY
 
 app = Flask(__name__)
+limiter = Limiter(
+    app,
+    key_func=get_ipaddr,
+    storage_uri='redis://127.0.0.1:6379',
+    default_limits=["60 per minute"],
+    retry_after='3000'
+)
 cache = redis.Redis(host='127.0.0.1', port=6379, db=0, decode_responses=True)
 logging.basicConfig(level=logging.INFO)
 isWindows = os.name == 'nt'
@@ -133,6 +142,7 @@ def get_node_heatmap():
 
 
 @app.route('/node', methods=['POST'])
+@limiter.limit("3/minute")
 def add_nodes():
     json_data = request.json
     if json_data['nodes'] is None:
@@ -146,6 +156,11 @@ def add_nodes():
             cache.set(CACHE_KEY['IP_CACHE'] + node['ip'], node['block_height'])
 
     return jsonify(err='No Error'), 200
+
+
+@app.errorhandler(429)
+def rate_limit_handler(e):
+    return jsonify(error="rate limit exceeded"), 429
 
 
 if __name__ == '__main__':

@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Chia full node list">
+    <meta name="keywords" content="chia node,chia node list">
     <title>Chia Node List</title>
     <script src="https://cdn.jsdelivr.net/npm/axios@0.21.1/dist/axios.min.js" integrity="sha256-JLmknTdUZeZZ267LP9qB+/DT7tvxOOKctSKeUC2KT6E=" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css" integrity="sha512-Cv93isQdFwaKBV+Z4X8kaVBYWHST58Xb/jVOcV9aRsGSArZsgAnFIhMpDoMDcFNoUtday1hdjn0nGp3+KZyyFw==" crossorigin="anonymous" />
@@ -143,7 +145,11 @@
                 result_nodes = sortNodes(nodeList.nodes);
                 populateTable(result_nodes);
                 activeNodeCountElm.innerHTML = nodeList.nodes.length;
-                validatedAtElm.innerHTML = nodeList.validated_at;
+                if(nodeList.validated_at == null){
+                    validatedAtElm.innerHTML = '<span style="color: red;">NOT VALIDATED</span>' ;
+                }else{
+                    validatedAtElm.innerHTML = nodeList.validated_at;
+                }
             }catch(error){
                 alert('Fail to get node list!');
                 console.error(error);
@@ -152,7 +158,7 @@
 
         const toggleHeatmap = (evt) =>{
             if(isHeatmapClosed){
-                heatmapImage.src = '/heatmap?time=' + Date.now();
+                heatmapImage.src = '/heatmap';
                 imageLoadingElm.innerHTML = 'Loading heatmap...';
                 heatmapContainerElm.style.display = 'block';
                 isHeatmapClosed = false;
@@ -175,7 +181,13 @@
                 if(b.geo.continent == null){
                     b.geo.continent = 'Unknown'
                 }
-                return a.geo.continent.localeCompare(b.geo.continent);
+                if(a.geo.country == null){
+                    a.geo.country = 'Unknown'
+                }
+                if(b.geo.country == null){
+                    b.geo.country = 'Unknown'
+                }
+                return a.geo.continent.localeCompare(b.geo.continent) || a.geo.country.localeCompare(b.geo.country);
             });
         }
 

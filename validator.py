@@ -49,8 +49,11 @@ def validate_nodes(validate_down_node=False):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Chia node connection validator')
     parser.add_argument('--interval', metavar='interval', type=int,
-                        help='Validation Interval. Default to 15min', default=15)
+                        help='Validation Interval. Default to 30min', default=30)
     args = parser.parse_args()
+    if args.interval < 30:
+        print('WARNING! VALIDATION MIGHT BE SPAMMY!')
+        logging.warning("VALIDATION MIGHT BE SPAMMY!")
     INTERVAL = args.interval * 60
     loop = 0
     while True:
