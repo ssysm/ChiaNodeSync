@@ -55,10 +55,10 @@
             <h1>Chia Node List</h1>
             <p>
                 This table contains active chia node on the internet. Use them at your own risk.
-                <br>
-                To remove IP from the table, block IP: <code>one-six-seven[dot]114[dot]114[dot]99</code>.
             </p>
-            <h4>Validated at: <span id="validated-at"></span></h4>
+            <h4>Validated at: <span id="validated-at"></span>.
+                <br>
+                Total active nodes: <span id="active-node-count"></span></h4>
         </div>
         <hr>
         <div class="info">
@@ -101,6 +101,9 @@
                 This list can be obtained in JSON format: <br>
                 API Endpoint: <code>https://chia.powerlayout.com/nodes?block_height=[true|false]</code>
             </p>
+            <p>
+                To remove IP from the table, block IP: <code>one-six-seven[dot]114[dot]114[dot]99</code>.
+            </p>
         </div>
         <hr>
         <div class="copyright">
@@ -124,6 +127,9 @@
         const heatmapContainerElm = document.querySelector('#heatmap-container');
         const heatmapImage = document.querySelector('#heatmap-image');
         const imageLoadingElm = document.querySelector('#loading-status');
+        const activeNodeCountElm = document.querySelector('#active-node-count');
+
+        let result_nodes = [];
 
         window.onload = async()=>{
 
@@ -131,28 +137,12 @@
             heatmapImage.addEventListener('load', onloadImage);
 
             try{
-                let tableHtml = '';
                 const nodeList = await axios.get('/nodes?block_height=true&geoip=true')
                 .then(res => res.data)
 
-                nodeList.nodes.map(node =>{
-                    tableHtml +=
-                    `
-                        <tr>
-                            <td>
-                                ${node.geo.country_iso == null ? '<span>?</span>' :
-                                    `<span class="flag-icon flag-icon-${node.geo.country_iso.toLowerCase()} flag-icon-squared"></span>`
-                                }
-                                ${node.ip}
-                            </td>
-                            <td>${node.port}</td>
-                            <td>${node.block_height}</td>
-                            <td>${node.geo.country == null ? 'Unknown' : node.geo.country}, ${node.geo.continent == null ? 'Unknown' : node.geo.continent}</td>
-                        </tr>
-                    `
-                });
-
-                tableContentElm.innerHTML = tableHtml;
+                result_nodes = sortNodes(nodeList.nodes);
+                populateTable(result_nodes);
+                activeNodeCountElm.innerHTML = nodeList.nodes.length;
                 validatedAtElm.innerHTML = nodeList.validated_at;
             }catch(error){
                 alert('Fail to get node list!');
@@ -175,6 +165,39 @@
 
         const onloadImage = (evt) =>{
             imageLoadingElm.innerHTML = '';
+        }
+
+        const sortNodes = (nodes) =>{
+            return nodes.sort((a, b) => {
+                if(a.geo.continent == null){
+                    a.geo.continent = 'Unknown'
+                }
+                if(b.geo.continent == null){
+                    b.geo.continent = 'Unknown'
+                }
+                return a.geo.continent.localeCompare(b.geo.continent);
+            });
+        }
+
+        const populateTable = (nodes) => {
+            let tableHtml = '';
+            nodes.map(node =>{
+                tableHtml +=
+                `
+                    <tr>
+                        <td>
+                            ${node.geo.country_iso == null ? '<span>?</span>' :
+                                `<span class="flag-icon flag-icon-${node.geo.country_iso.toLowerCase()} flag-icon-squared"></span>`
+                            }
+                            ${node.ip}
+                        </td>
+                        <td>${node.port}</td>
+                        <td>${node.block_height}</td>
+                        <td>${node.geo.country == null ? 'Unknown' : node.geo.country}, ${node.geo.continent == null ? 'Unknown' : node.geo.continent}</td>
+                    </tr>
+                `
+            });
+            tableContentElm.innerHTML = tableHtml;
         }
     </script>
 
