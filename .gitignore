@@ -137,4 +137,9 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+*.mmdb
+
 .idea/
+
+geo_cache.csv
+heatmap.png

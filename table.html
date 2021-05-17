@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chia Node List</title>
     <script src="https://cdn.jsdelivr.net/npm/axios@0.21.1/dist/axios.min.js" integrity="sha256-JLmknTdUZeZZ267LP9qB+/DT7tvxOOKctSKeUC2KT6E=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css" integrity="sha512-Cv93isQdFwaKBV+Z4X8kaVBYWHST58Xb/jVOcV9aRsGSArZsgAnFIhMpDoMDcFNoUtday1hdjn0nGp3+KZyyFw==" crossorigin="anonymous" />
     <style>
         table {
             font-family: arial, sans-serif;
@@ -29,6 +30,22 @@
             max-width: 70vw;
             margin: 0 auto;
         }
+
+        @media only screen and (max-width: 600px) {
+          .container{
+            max-width: 100vw;
+            margin: 0 auto;
+            }
+        }
+
+        #heatmap-image{
+            width: 100%;
+            height: auto;
+        }
+
+        #heatmap-container{
+            display: none;
+        }
     </style>
 </head>
 
@@ -39,18 +56,20 @@
             <p>
                 This table contains active chia node on the internet. Use them at your own risk.
                 <br>
-                To remove your IP from the table, block IP: <code>one-six-seven[dot]114[dot]114[dot]99</code>.
+                To remove IP from the table, block IP: <code>one-six-seven[dot]114[dot]114[dot]99</code>.
             </p>
             <h4>Validated at: <span id="validated-at"></span></h4>
         </div>
         <hr>
-        <div class="table">
-            <table>
+        <div class="info">
+            <div class="table">
+                <table>
                 <thead>
                     <tr>
-                      <th>IP</th>
-                      <th>Port</th>
-                      <th>Block Height</th>
+                        <th>IP</th>
+                        <th>Port</th>
+                        <th>Block Height</th>
+                        <th>IP Origin</th>
                     </tr>
                 </thead>
                 <tbody id="table-content">
@@ -58,40 +77,73 @@
                         <td>Waiting...</td>
                         <td>Waiting...</td>
                         <td>Waiting...</td>
+                        <td>Waiting...</td>
                     </tr>
                 </tbody>
               </table>
+            </div>
+            <div style="margin-top: 10px; margin-bottom: 10px;"></div>
+            <div class="heatmap">
+                <button type="button" id="collapsible-map-button">Toggle Node Heatmap</button>
+                <div id="heatmap-container" style="padding-top: 10px">
+                    <img src="" alt="Node Heatmap" id="heatmap-image">
+                </div>
+            </div>
         </div>
         <hr>
         <div class="memo">
             <h2>Other Information</h2>
             <p>
-                Offical Node: <code>node.chia.net</code>
+                Offical Node: <code>node.chia.net:8444</code>
             </p>
             <p>
                 This list can be obtained in JSON format: <br>
                 API Endpoint: <code>https://chia.powerlayout.com/nodes?block_height=[true|false]</code>
             </p>
         </div>
+        <hr>
+        <div class="copyright">
+            <h2>Data copyright</h2>
+            <p>
+                GeoIP Copyright: <br>
+                This product includes GeoLite2 data created by MaxMind, available from <a href="https://www.maxmind.com">https://www.maxmind.com</a>.
+                <br> <br>
+                OpenStreetMap Copyright: <br>
+                &copy;<a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors.</a> Base map and data from OpenStreetMap and OpenStreetMap Foundation
+            </p>
+        </div>
     </div>
 
     <script>
+        let isHeatmapClosed = true;
+
+        const tableContentElm = document.querySelector('#table-content');
+        const validatedAtElm = document.querySelector('#validated-at');
+        const mapButtonElm = document.querySelector('#collapsible-map-button');
+        const heatmapContainerElm = document.querySelector('#heatmap-container');
+
         window.onload = async()=>{
-            const tableContentElm = document.querySelector('#table-content');
-            const validatedAtElm = document.querySelector('#validated-at');
+
+            mapButtonElm.addEventListener('click', toggleHeatmap);
 
             try{
                 let tableHtml = '';
-                const nodeList = await axios.get('/nodes?block_height=true')
+                const nodeList = await axios.get('/nodes?block_height=true&geoip=true')
                 .then(res => res.data)
 
                 nodeList.nodes.map(node =>{
                     tableHtml +=
                     `
                         <tr>
-                            <td>${node.ip}</td>
+                            <td>
+                                ${node.geo.country_iso == null ? '<span>?</span>' :
+                                    `<span class="flag-icon flag-icon-${node.geo.country_iso.toLowerCase()} flag-icon-squared"></span>`
+                                }
+                                ${node.ip}
+                            </td>
                             <td>${node.port}</td>
                             <td>${node.block_height}</td>
+                            <td>${node.geo.country == null ? 'Unknown' : node.geo.country}, ${node.geo.continent == null ? 'Unknown' : node.geo.continent}</td>
                         </tr>
                     `
                 });
@@ -102,6 +154,19 @@
                 alert('Fail to get node list!');
                 console.error(error);
             }
+        }
+
+        const toggleHeatmap = (evt) =>{
+            if(isHeatmapClosed){
+                const heatmapImage = document.querySelector('#heatmap-image');
+                heatmapImage.src = '/heatmap?time=' + Date.now();
+                heatmapContainerElm.style.display = 'block';
+                isHeatmapClosed = false;
+            }else{
+                heatmapContainerElm.style.display = 'none';
+                isHeatmapClosed = true;
+            }
+
         }
     </script>
 
