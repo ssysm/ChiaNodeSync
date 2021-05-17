@@ -120,10 +120,12 @@ def get_node_heatmap():
             csvfile.close()
             if isWindows:
                 sts = subprocess.Popen(
-                    'venv/Scripts/python.exe heatmap/heatmap.py --filetype csv -o heatmap.png --osm --zoom 3  '
+                    'venv/Scripts/python.exe heatmap/heatmap.py --filetype csv -o heatmap.png -k gaussian --osm '
+                    '--zoom 3 -d 0.1 -B 0.4 '
                     'geo_cache.csv').wait()
             else:
-                sts = subprocess.Popen('venv/bin/python heatmap/heatmap.py --filetype csv -o heatmap.png --osm --zoom '
+                sts = subprocess.Popen('venv/bin/python heatmap/heatmap.py --filetype csv -k gaussian -o heatmap.png '
+                                       '-d 0.1 -B 0.4 --osm --zoom '
                                        '3  geo_cache.csv', shell=True).wait()
             if sts != 0:
                 return '', 204
