@@ -147,7 +147,8 @@ def add_nodes():
     json_data = request.json
     if json_data['nodes'] is None:
         return jsonify(err='No Nodes'), 400
-
+    if len(json_data['node']) > 50:
+        return jsonify(err='Too many nodes'), 400
     for node in json_data['nodes']:
         if node['ip'] is None or node['port'] is None:
             return jsonify(err='No IP or port'), 400

@@ -43,6 +43,10 @@ def validate_nodes(validate_down_node=False):
         cache.srem(CACHE_KEY['DOWN_NODE_SET'], node.ip+':'+str(node.port))
     st = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
     cache.set(CACHE_KEY['LAST_VALIDATE'], st)
+
+    cache.delete(CACHE_KEY['NO_BLOCK_HEIGHT_CACHE'])
+    cache.delete(CACHE_KEY['BLOCK_HEIGHT_CACHE'])
+    cache.delete(CACHE_KEY['BLOCK_HEIGHT_AND_GEO_CACHE'])
     pass
 
 
